@@ -1,0 +1,39 @@
+version: '3'
+
+services:
+
+  fhir:
+    container_name: fhir
+    image: hapiproject/hapi:v5.3.0
+    ports:
+      - "8090:8080"
+    environment:
+      profiles.active: r4
+      spring.datasource.url: 'jdbc:postgresql://db:5432/hapi'
+      spring.datasource.username: admin
+      spring.datasource.password: admin
+      spring.datasource.driverClassName: org.postgresql.Driver
+      # - "tester.server_address=http://localhost:8080/fhir"
+      hapi.fhir.subscription.reshook_enabled: "true"
+      hapi.fhir.subscription.websocket_enabled: "true"
+      hapi.fhir.client_id_strategy: ANY
+
+    depends_on:
+      - db
+
+  db:
+    image: postgres
+    volumes:
+      - fhir-db-data:/var/lib/postgresql/data
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: admin
+      POSTGRES_USER: admin
+      POSTGRES_DB: hapi
+    # not needed for networking between containers but here for troubleshooting
+    ports:
+      - "5433:5432"
+
+
+volumes:
+  fhir-db-data: 
